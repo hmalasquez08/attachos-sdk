@@ -1,75 +1,88 @@
-# AttachOs SDK — Core Engine
+# AttachOs SDK — Motor Principal
 
-Core engine for AttachOs CEU v1. Handles GA4, Facebook, and ecommerce event dispatching with data normalization, SHA-256 hashing, deduplication, and dataLayer integration for Google Tag Manager.
-
----
-
-## What is this?
-
-`attach-utils.js` is the universal motor of the AttachOs ecosystem. It is loaded **once** in GTM across all pages and cached by the browser for months, making your tracking infrastructure fast and lightweight.
-
-It powers:
-- **GA4 events** — standard and ecommerce
-- **Facebook/Meta events** — with automatic PascalCase formatting
-- **Data normalization** — removes accents, enforces snake_case, trims noise
-- **SHA-256 hashing** — auto-hashes sensitive fields like `email`, `phone`, `telefono`
-- **Deduplication** — ignores duplicate events fired within a 2-second window
-- **Payload size protection** — aborts events exceeding 50,000 bytes
+Motor principal del AttachOs CEU v1. Se encarga del despacho de eventos GA4, Facebook y ecommerce con normalización de datos, hasheo SHA-256, deduplicación e integración con el dataLayer para Google Tag Manager.
 
 ---
 
-## How it works
+## ¿Qué es esto?
 
-This repository is **separate** from your project orchestrators (CEU event ZIPs). The split architecture means:
+`attach-utils.js` es el motor universal del ecosistema AttachOs. Se carga **una sola vez** en GTM en todas las páginas y el navegador lo guarda en caché por meses, haciendo que tu infraestructura de tracking sea rápida y liviana.
 
-1. The browser downloads this engine **once** and caches it for months.
-2. When you update events in your projects, users only download a small orchestrator file — not the entire engine again.
+Incluye:
+- **Eventos GA4** — estándar y ecommerce
+- **Eventos Facebook/Meta** — con formato PascalCase automático
+- **Normalización de datos** — elimina acentos, convierte a snake_case, limpia ruido
+- **Hasheo SHA-256** — hashea automáticamente campos sensibles como `email`, `phone`, `telefono`
+- **Detección de valores ya hasheados** — si un campo ya contiene un SHA-256 válido, no lo vuelve a hashear
+- **Deduplicación** — ignora eventos duplicados disparados dentro de una ventana de 2 segundos
+- **Protección de tamaño de payload** — aborta eventos que superen los 50,000 bytes
 
 ---
 
-## CDN Usage (jsDelivr)
+## ¿Cómo funciona?
 
-Load this file in GTM as a **Custom HTML tag** on All Pages:
+Este repositorio es **independiente** de los orquestadores de cada proyecto (ZIPs de eventos CEU). Esta arquitectura separada significa:
+
+1. El navegador descarga este motor **una sola vez** y lo guarda en caché por meses.
+2. Cuando agregas o editas eventos en tus proyectos, los usuarios solo descargan un micro-archivo orquestador — no el motor completo.
+
+---
+
+## Uso via CDN (jsDelivr)
+
+Carga este archivo en GTM como una etiqueta de **HTML Personalizado** en All Pages:
 
 ```html
-<script src="https://cdn.jsdelivr.net/gh/hmalasquez08/attachos-sdk@v1.0.0/attach-utils.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/hmalasquez08/attachos-sdk@v1.0.1/attach-utils.min.js"></script>
 ```
 
-To always use the latest patch of v1:
+Versión legible (sin minificar):
 ```html
-<script src="https://cdn.jsdelivr.net/gh/hmalasquez08/attachos-sdk@v1/attach-utils.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/hmalasquez08/attachos-sdk@v1.0.1/attach-utils.js"></script>
 ```
 
 ---
 
-## API Reference
+## Modo Debug
 
-Once loaded, the SDK is available globally as `window.attach`.
+El modo debug se activa desde el **Custom Template de GTM** marcando la casilla *"Habilitar modo Debug"*. Esto escribe `window.__attachDebug = true` antes de cargar el script, activando los logs en consola.
 
-### `attach.ga4Event(name, payload)`
-Pushes a GA4 custom event to the dataLayer.
+También puedes activarlo manualmente desde la consola del navegador:
 
 ```js
-attach.ga4Event('button_click', {
-  button_text: 'Buy Now',
-  section: 'Hero'
+window.__attachDebug = true;
+```
+
+---
+
+## Referencia de API
+
+Una vez cargado, el SDK está disponible globalmente como `window.attach`.
+
+### `attach.ga4Event(name, payload)`
+Envía un evento GA4 personalizado al dataLayer.
+
+```js
+attach.ga4Event('clic_boton', {
+  texto_boton: 'Comprar ahora',
+  seccion: 'Hero'
 });
 ```
 
 ### `attach.ga4Ecommerce(name, payload)`
-Pushes a GA4 ecommerce event to the dataLayer.
+Envía un evento de ecommerce GA4 al dataLayer.
 
 ```js
 attach.ga4Ecommerce('purchase', {
   transaction_id: '12345',
   value: 99.90,
   currency: 'USD',
-  items: [{ item_id: 'SKU-01', item_name: 'Product A', price: 99.90 }]
+  items: [{ item_id: 'SKU-01', item_name: 'Producto A', price: 99.90 }]
 });
 ```
 
 ### `attach.fbEcommerce(name, payload)`
-Pushes a Facebook/Meta event to the dataLayer with PascalCase formatting.
+Envía un evento Facebook/Meta al dataLayer con formato PascalCase automático.
 
 ```js
 attach.fbEcommerce('Purchase', {
@@ -81,20 +94,22 @@ attach.fbEcommerce('Purchase', {
 
 ---
 
-## Sensitive Data Handling
+## Manejo de datos sensibles
 
-Fields named `email`, `phone`, `telefono`, `celular`, `mobile`, or `tel` are **automatically SHA-256 hashed** before being pushed to the dataLayer. No configuration needed.
+Los campos llamados `email`, `phone`, `telefono`, `celular`, `mobile` o `tel` son **hasheados automáticamente con SHA-256** antes de enviarse al dataLayer. No requiere ninguna configuración adicional.
+
+Si el valor ya viene hasheado (cadena hexadecimal de 64 caracteres), el motor lo detecta y **no lo vuelve a hashear**.
 
 ---
 
-## Versioning
+## Versiones
 
-| Version | Notes |
+| Versión | Notas |
 |---------|-------|
-| v1.0.0  | Initial release |
+| v1.0.1  | Release inicial |
 
 ---
 
-## License
+## Licencia
 
 MIT © AttachOs
